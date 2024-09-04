@@ -1,0 +1,41 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "biometricsystem-a6265",
+          "appId": "1:571874493331:android:69f99a11f4919b04b35e66",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "biometricsystem-a6265",
+          "appId": "1:571874493331:ios:867164787c0cf9f9b35e66",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "biometricsystem-a6265",
+          "appId": "1:571874493331:ios:867164787c0cf9f9b35e66",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "biometricsystem-a6265",
+          "configurations": {
+            "android": "1:571874493331:android:69f99a11f4919b04b35e66",
+            "ios": "1:571874493331:ios:867164787c0cf9f9b35e66",
+            "macos": "1:571874493331:ios:867164787c0cf9f9b35e66",
+            "web": "1:571874493331:web:8b1f117d1fde0e28b35e66",
+            "windows": "1:571874493331:web:09c883979dbda676b35e66"
+          }
+        }
+      }
+    }
+  }
+}

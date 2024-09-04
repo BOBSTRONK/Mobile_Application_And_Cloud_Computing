@@ -4,6 +4,10 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>To verify user's identity via face</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>To verify user's identity via voice</string>
 	<key>CFBundleDisplayName</key>
 	<string>App</string>
 	<key>CFBundleExecutable</key>
