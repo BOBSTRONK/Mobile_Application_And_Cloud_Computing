@@ -1,6 +1,6 @@
-import 'package:app/model/contract_provider.dart';
 import 'package:app/model/user.dart';
-import 'package:app/screen/home_page.dart';
+import 'package:app/screen/home.dart';
+import 'package:app/service/contract_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
