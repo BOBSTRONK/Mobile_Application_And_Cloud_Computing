@@ -1,13 +1,15 @@
 import 'package:app/components/components.dart';
-import 'package:app/model/contract_provider.dart';
+import 'package:app/model/sign_up_notifier.dart';
+import 'package:app/service/contract_provider.dart';
 import 'package:app/model/user.dart';
-import 'package:app/screen/home_page.dart';
+import 'package:app/screen/home.dart';
 import 'package:app/service/Firebase_database.dart';
 import 'package:app/service/deep_face_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:m7_livelyness_detection/index.dart';
+import 'package:provider/provider.dart';
 import 'package:web3dart/web3dart.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -37,6 +39,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final String wsUrl =
       "wss://eth-sepolia.g.alchemy.com/v2/1WyDdrv-NGBT-ZafMq8xdadQTPiwFHK6";
 
+  SignUpPageProvider? signUpPageProvider;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -64,76 +68,133 @@ class _SignUpPageState extends State<SignUpPage> {
         "Id": id!,
       };
       registeredUsers = await firebaseInstance!.getUsersFromFirestore();
-      if (registeredUsers!.isEmpty) {
-        try {
-          firebaseInstance!.addUsers(userInformation);
-          contractProvider!.registerVoter(id!);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              backgroundColor: Colors.black,
-              content: Text(
-                "Registered Successfully",
-                style: TextStyle(fontSize: 20, color: Colors.white),
-              )));
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: ((context) => Home())));
-        } on FirebaseException catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            backgroundColor: Colors.black,
-            content: Text(
-              "Something went wrong",
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          ));
-        }
-      } else if (registeredUsers!.isNotEmpty) {
-        for (var i = 0; i < registeredUsers!.length; i++) {
-          bool reply = await deepFaceApi!
-              .verifyFace(base64FileBytes, registeredUsers![i].image);
-          if (reply == true) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                backgroundColor: Colors.black,
-                content: Text(
-                  "You are already Registered!",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                )));
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: ((context) => Home())));
-            break;
-          } else if (i + 1 == registeredUsers!.length && reply == false) {
-            try {
-              firebaseInstance!.addUsers(userInformation);
-              contractProvider!.registerVoter(id!);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  backgroundColor: Colors.black,
-                  content: Text(
-                    "Registered Successfully",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
-                  )));
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: ((context) => Home())));
-            } on FirebaseException catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                backgroundColor: Colors.black,
-                content: Text(
-                  "Something went wrong",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              ));
-            }
-          }
-        }
-      }
+      signUpPageProvider!.registration(registeredUsers!, contractProvider!,
+          base64FileBytes, userInformation, id!);
+      // if (registeredUsers!.isEmpty) {
+      //   try {
+      //     firebaseInstance!.addUsers(userInformation);
+      //     contractProvider!.registerVoter(id!);
+      //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //         backgroundColor: Colors.black,
+      //         content: Text(
+      //           "Registered Successfully",
+      //           style: TextStyle(fontSize: 20, color: Colors.white),
+      //         )));
+      //     Navigator.pushReplacement(
+      //         context, MaterialPageRoute(builder: ((context) => Home())));
+      //   } on FirebaseException catch (e) {
+      //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //       backgroundColor: Colors.black,
+      //       content: Text(
+      //         "Firebase Errors, check your internet connection",
+      //         style: TextStyle(color: Colors.white, fontSize: 18),
+      //       ),
+      //     ));
+      //   }
+      // } else if (registeredUsers!.isNotEmpty) {
+      //   for (var i = 0; i < registeredUsers!.length; i++) {
+      //     bool reply = await deepFaceApi!
+      //         .verifyFace(base64FileBytes, registeredUsers![i].image);
+      //     if (reply == true) {
+      //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //           backgroundColor: Colors.black,
+      //           content: Text(
+      //             "You are already Registered!",
+      //             style: TextStyle(fontSize: 20, color: Colors.white),
+      //           )));
+      //       Navigator.pushReplacement(
+      //           context, MaterialPageRoute(builder: ((context) => Home())));
+      //       break;
+      //     } else if (i + 1 == registeredUsers!.length && reply == false) {
+      //       try {
+      //         firebaseInstance!.addUsers(userInformation);
+      //         contractProvider!.registerVoter(id!);
+      //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //             backgroundColor: Colors.black,
+      //             content: Text(
+      //               "Registered Successfully",
+      //               style: TextStyle(fontSize: 20, color: Colors.white),
+      //             )));
+      //         Navigator.pushReplacement(
+      //             context, MaterialPageRoute(builder: ((context) => Home())));
+      //       } on FirebaseException catch (e) {
+      //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //           backgroundColor: Colors.black,
+      //           content: Text(
+      //             "Something went wrong",
+      //             style: TextStyle(color: Colors.white, fontSize: 18),
+      //           ),
+      //         ));
+      //       }
+      //     }
+      //   }
+      // }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          title: const Text('SignUp'),
-        ),
-        body: _body());
+    return ChangeNotifierProvider(
+      create: (BuildContext context) => SignUpPageProvider(context: context),
+      child: body(),
+    );
+  }
+
+  Widget body() {
+    return Builder(builder: (BuildContext context) {
+      signUpPageProvider = context.watch<SignUpPageProvider>();
+      Widget? body;
+      if (signUpPageProvider!.loading == false) {
+        body = SafeArea(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            caputuredImage(),
+            SizedBox(
+              height: 30,
+            ),
+            Row(
+              children: [
+                Spacer(),
+                Expanded(
+                  flex: 8,
+                  child: SignUpForm(),
+                ),
+                Spacer()
+              ],
+            ),
+            // CustomButton(
+            //     buttonText: "Verify Face",
+            //     onPressed: () {
+            //       deepFaceApi!
+            //           .verifyFace("images/mobile1.jpeg", "images/Mobile2.jpeg");
+            //     })
+          ],
+        ));
+      } else if (signUpPageProvider!.loading == true) {
+        body = Center(
+          child: Container(
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Processing the registration, Please wait",
+                  style: TextStyle(fontSize: 20, color: Colors.black),
+                ),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: body,
+      );
+    });
   }
 
   Widget _body() {
