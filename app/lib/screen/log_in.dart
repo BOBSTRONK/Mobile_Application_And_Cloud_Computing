@@ -270,40 +270,96 @@ class _VotingPageState extends State<VotingPage> {
         );
       }
       return Scaffold(
-          appBar: AppBar(
-            leading: GestureDetector(
-              onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext _context) {
-                      return AlertDialog(
-                        title: Text("Warning"),
-                        content: Text(
-                            "You are trying to Log Out, you will be direct to the Home Page"),
-                        actions: [
-                          TextButton(
-                              onPressed: () {
-                                Navigator.of(_context).pop();
-                              },
-                              child: Text("Reamin here")),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: ((context) => Home())));
-                              },
-                              child: Text("Log out")),
-                        ],
-                      );
-                    });
-              },
-              child: Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-              ),
+          drawer: Drawer(
+            child: ListView(
+              padding: const EdgeInsets.all(5),
+              children: [
+                // DrawerHeader(
+                //   child: UserAccountsDrawerHeader(
+                //     decoration: BoxDecoration(
+                //       color: Colors.white,
+                //     ),
+                //     accountName: Text(
+                //       "Cai",
+                //       style: TextStyle(
+                //           fontSize: 18,
+                //           color: Colors.black,
+                //           fontWeight: FontWeight.bold),
+                //     ),
+                //     accountEmail: Text(
+                //       "caiweidong123@gmail.com",
+                //       style: TextStyle(
+                //           fontSize: 18,
+                //           color: Colors.black,
+                //           fontWeight: FontWeight.bold),
+                //     ),
+                //     currentAccountPictureSize: Size.square(35),
+                //     currentAccountPicture: CircleAvatar(
+                //       backgroundColor: Colors.white,
+                //       child: Text(
+                //         "C",
+                //         style: TextStyle(fontSize: 25, color: Colors.blue),
+                //       ),
+                //     ),
+                //   ),
+                //   decoration: BoxDecoration(
+                //     color: Colors.white,
+                //   ),
+                // ),
+                ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text('Profile information'),
+                  onTap: () {},
+                ),
+                ListTile(
+                  leading: const Icon(Icons.supervisor_account),
+                  title: const Text('Become Publisher'),
+                  onTap: () {},
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: const Text('LogOut'),
+                  onTap: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext _context) {
+                          return AlertDialog(
+                            title: Text("Warning"),
+                            content: Text(
+                                "You are trying to Log Out, you will be direct to the Home Page"),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(_context).pop();
+                                  },
+                                  child: Text("Reamin here")),
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: ((context) => Home())));
+                                  },
+                                  child: Text("Log out")),
+                            ],
+                          );
+                        });
+                  },
+                )
+              ],
             ),
+          ),
+          appBar: AppBar(
+            // leading: GestureDetector(
+            //   onTap: () {
+            // },
+            //   child: Icon(
+            //     Icons.arrow_back,
+            //     color: Colors.white,
+            //   ),
+            // ),
             centerTitle: true,
+            iconTheme: IconThemeData(color: Colors.white),
             backgroundColor: Colors.black,
             elevation: 0,
             title: const Text(

@@ -40,6 +40,7 @@ class DeepFaceApi {
     print("sending request to: $url");
     try {
       http.Response res = await http.post(url, body: msg, headers: headers);
+      print("Status code of http request: ${res.statusCode}");
       switch (res.statusCode) {
         case HttpStatus.ok:
           final response = json.decode(res.body);
@@ -48,6 +49,8 @@ class DeepFaceApi {
           } else {
             return false;
           }
+        case HttpStatus.badRequest:
+          return false;
         default:
           throw UnexpectedResponseException(
               "unexpected HTTP status : ${res.statusCode} ${res.reasonPhrase}");

@@ -3,6 +3,7 @@ import 'package:app/screen/home.dart';
 import 'package:app/service/Firebase_database.dart';
 import 'package:app/service/contract_provider.dart';
 import 'package:app/service/deep_face_api.dart';
+import 'package:app/service/exceptions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,66 +30,77 @@ class SignUpPageProvider extends ChangeNotifier {
       Map<String, String> userInformation,
       String id) async {
     pageLoading();
-    if (registeredUsers.isEmpty) {
-      try {
-        firebaseInstance.addUsers(userInformation);
-        contractProvider.registerVoter(id);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            backgroundColor: Colors.black,
-            content: Text(
-              "Registered Successfully",
-              style: TextStyle(fontSize: 20, color: Colors.white),
-            )));
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: ((context) => Home())));
-      } on FirebaseException catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          backgroundColor: Colors.black,
-          content: Text(
-            "Firebase Errors, check your internet connection",
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
-        ));
-      }
-    } else if (registeredUsers.isNotEmpty) {
-      for (var i = 0; i < registeredUsers.length; i++) {
-        bool reply = await deepFaceApi.verifyFace(
-            base64FileBytes, registeredUsers[i].image);
-        if (reply == true) {
+    try {
+      if (registeredUsers.isEmpty) {
+        try {
+          firebaseInstance.addUsers(userInformation);
+          contractProvider.registerVoter(id);
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               backgroundColor: Colors.black,
               content: Text(
-                "You are already Registered!",
+                "Registered Successfully",
                 style: TextStyle(fontSize: 20, color: Colors.white),
               )));
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: ((context) => Home())));
-          loading = false;
-          notifyListeners();
-          break;
-        } else if (i + 1 == registeredUsers!.length && reply == false) {
-          try {
-            firebaseInstance.addUsers(userInformation);
-            contractProvider.registerVoter(id!);
+        } on FirebaseException catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            backgroundColor: Colors.black,
+            content: Text(
+              "Firebase Errors, check your internet connection",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          ));
+        }
+      } else if (registeredUsers.isNotEmpty) {
+        for (var i = 0; i < registeredUsers.length; i++) {
+          bool reply = await deepFaceApi.verifyFace(
+              base64FileBytes, registeredUsers[i].image);
+          if (reply == true) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 backgroundColor: Colors.black,
                 content: Text(
-                  "Registered Successfully",
+                  "You are already Registered!",
                   style: TextStyle(fontSize: 20, color: Colors.white),
                 )));
             Navigator.pushReplacement(
                 context, MaterialPageRoute(builder: ((context) => Home())));
-          } on FirebaseException catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              backgroundColor: Colors.black,
-              content: Text(
-                "Firebase Errors, check your internet connection",
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-            ));
+            loading = false;
+            notifyListeners();
+            break;
+          } else if (i + 1 == registeredUsers!.length && reply == false) {
+            try {
+              firebaseInstance.addUsers(userInformation);
+              contractProvider.registerVoter(id!);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  backgroundColor: Colors.black,
+                  content: Text(
+                    "Registered Successfully",
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  )));
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: ((context) => Home())));
+            } on FirebaseException catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                backgroundColor: Colors.black,
+                content: Text(
+                  "Firebase Errors, check your internet connection",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ));
+            }
           }
         }
       }
+    } on NoConnectionException {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.black,
+          content: Text(
+            "Server problem, please wait",
+            style: TextStyle(fontSize: 20, color: Colors.white),
+          )));
+      loading = false;
+      notifyListeners();
     }
     loading = false;
     notifyListeners();
