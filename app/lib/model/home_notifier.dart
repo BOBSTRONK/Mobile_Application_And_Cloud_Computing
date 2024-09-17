@@ -48,7 +48,16 @@ class HomePageProvider extends ChangeNotifier {
               )));
         }
       }
-    } on NoConnectionException {
+    } on NoConnectionException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.black,
+          content: Text(
+            "Check your internet connectivity or maybe something went wrong with Server",
+            style: TextStyle(fontSize: 20, color: Colors.white),
+          )));
+      loading = false;
+      notifyListeners();
+    } on UnexpectedResponseException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           backgroundColor: Colors.black,
           content: Text(

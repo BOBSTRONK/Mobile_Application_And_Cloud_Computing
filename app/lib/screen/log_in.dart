@@ -5,6 +5,7 @@ import 'package:app/service/contract_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
 import 'package:m7_livelyness_detection/index.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -53,12 +54,7 @@ class _VotingPageState extends State<VotingPage> {
     return Builder(builder: (BuildContext context) {
       contractProvider = context.watch<ContractProvider>();
       Widget? _body;
-      String? firstTopic;
-      String? secondTopic;
-      String? firstTopicCount;
-      int? firstTopicCountInteger;
-      String? secondTopicCount;
-      int? secondTopicCountInteger;
+
       if (contractProvider!.loading == true) {
         _body = Container(
           alignment: Alignment.center,
@@ -68,204 +64,78 @@ class _VotingPageState extends State<VotingPage> {
           ),
         );
       } else {
-        firstTopic = contractProvider!.Events[0][0];
-        secondTopic = contractProvider!.Events[1][0];
-        firstTopicCount = contractProvider!.Events[0][1].toString();
-        BigInt firstCount = contractProvider!.Events[0][1];
-        firstTopicCountInteger = firstCount.toInt();
-        BigInt secondCount = contractProvider!.Events[1][1];
-        secondTopicCountInteger = secondCount.toInt();
-        secondTopicCount = contractProvider!.Events[1][1].toString();
+        print("This is Vote Event of contract ${contractProvider!.Events}");
         _body = Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            Container(
+              width: MediaQuery.of(context).size.width - 50,
+              height: 145,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Image.asset('assets/images/vote.jpeg'),
+              ),
+            ),
             const SizedBox(
-              height: 5,
+              height: 10,
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Container(
-                width: 400,
-                height: 400,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(40),
-                    color: Colors.white30),
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: MediaQuery.of(context).size.width - 50,
-                        height: 145,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(30),
-                          child: Image.asset('assets/images/vote.jpeg'),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: 18,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hi Guys!',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 24),
-                              ),
-                              Text(
-                                'Welcome To Voting Poll!',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 24),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      LinearPercentIndicator(
-                        width: MediaQuery.of(context).size.width - 50,
-                        animation: true,
-                        lineHeight: 60.0,
-                        animationDuration: 1000,
-                        percent: firstTopicCountInteger / 10,
-                        center: Text(
-                          firstTopic!,
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16),
-                        ),
-                        barRadius: const Radius.circular(20),
-                        progressColor: Colors.greenAccent,
-                        backgroundColor: Colors.white30,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      LinearPercentIndicator(
-                        width: MediaQuery.of(context).size.width - 50,
-                        animation: true,
-                        lineHeight: 60.0,
-                        animationDuration: 1000,
-                        percent: secondTopicCountInteger / 10,
-                        center: Text(
-                          secondTopic!,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16),
-                        ),
-                        barRadius: const Radius.circular(20),
-                        progressColor: Colors.indigo,
-                        backgroundColor: Colors.white30,
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                    ],
-                  ),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 18,
                 ),
-              ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hi Guys!',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 24),
+                    ),
+                    Text(
+                      'Welcome To Voting Poll!',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 24),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      contractProvider!.castVote(0, 0, widget.user.id);
-                    },
-                    child: Container(
-                      width: 180,
-                      height: 80,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.indigo),
-                      child: Center(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              firstTopic,
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              // count from block chain
-                              firstTopicCount,
-                              style: TextStyle(
-                                  color: Colors.greenAccent,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 20),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      contractProvider!.castVote(0, 1, widget.user.id);
-                    },
-                    child: Container(
-                      width: 180,
-                      height: 80,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.indigo),
-                      child: Center(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              secondTopic,
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              // count from block chain
-                              secondTopicCount,
-                              style: TextStyle(
-                                  color: Colors.greenAccent,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 20),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: contractProvider!.Events[0].length,
+                  itemBuilder: (_, index) {
+                    // one example of voteEvents  [[Chinese Resturant, 3], [Italian Resturant, 2], 0]
+                    String firstTopic =
+                        contractProvider!.Events[0][index][0][0];
+                    String secondTopic =
+                        contractProvider!.Events[0][index][1][0];
+                    String firstTopicCount =
+                        contractProvider!.Events[0][index][0][1].toString();
+                    BigInt firstCount =
+                        contractProvider!.Events[0][index][0][1];
+                    int firstTopicCountInteger = firstCount.toInt();
+                    BigInt secondCount =
+                        contractProvider!.Events[0][index][1][1];
+                    int secondTopicCountInteger = secondCount.toInt();
+                    String secondTopicCount =
+                        contractProvider!.Events[0][index][1][1].toString();
+                    print("the first topic here: ${firstTopic}");
+                    return VoteEventTile(
+                        firstTopicCountInteger,
+                        firstTopic,
+                        firstTopicCount,
+                        secondTopicCountInteger,
+                        secondTopic,
+                        secondTopicCount);
+                  }),
             )
           ],
         );
@@ -398,5 +268,165 @@ class _VotingPageState extends State<VotingPage> {
           backgroundColor: Colors.black,
           body: _body);
     });
+  }
+
+  Widget VoteEventTile(
+    int firstTopicCountInteger,
+    String firstTopic,
+    String firstTopicCount,
+    int secondTopicCountInteger,
+    String secondTopic,
+    String secondTopicCount,
+  ) {
+    return Column(
+      children: [
+        const SizedBox(
+          height: 5,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            width: 400,
+            height: 200,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(40), color: Colors.white30),
+            child: Padding(
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  LinearPercentIndicator(
+                    width: MediaQuery.of(context).size.width - 50,
+                    animation: true,
+                    lineHeight: 60.0,
+                    animationDuration: 1000,
+                    percent: firstTopicCountInteger / 10,
+                    center: Text(
+                      firstTopic!,
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16),
+                    ),
+                    barRadius: const Radius.circular(20),
+                    progressColor: Colors.greenAccent,
+                    backgroundColor: Colors.white30,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  LinearPercentIndicator(
+                    width: MediaQuery.of(context).size.width - 50,
+                    animation: true,
+                    lineHeight: 60.0,
+                    animationDuration: 1000,
+                    percent: secondTopicCountInteger / 10,
+                    center: Text(
+                      secondTopic!,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16),
+                    ),
+                    barRadius: const Radius.circular(20),
+                    progressColor: Colors.indigo,
+                    backgroundColor: Colors.white30,
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: () {
+                  contractProvider!.castVote(0, 0, widget.user.id);
+                },
+                child: Container(
+                  width: 180,
+                  height: 80,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: Colors.indigo),
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          firstTopic,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16),
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          // count from block chain
+                          firstTopicCount,
+                          style: TextStyle(
+                              color: Colors.greenAccent,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  contractProvider!.castVote(0, 1, widget.user.id);
+                },
+                child: Container(
+                  width: 180,
+                  height: 80,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: Colors.indigo),
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          secondTopic,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16),
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          // count from block chain
+                          secondTopicCount,
+                          style: TextStyle(
+                              color: Colors.greenAccent,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        )
+      ],
+    );
   }
 }

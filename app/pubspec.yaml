@@ -75,6 +75,7 @@ flutter:
     - assets/images/
     - assets/voting_abi.json
     - assets/voting_test_abi.json
+    - assets/voting_abi_def.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
