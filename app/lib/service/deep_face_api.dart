@@ -50,7 +50,8 @@ class DeepFaceApi {
             return false;
           }
         case HttpStatus.badRequest:
-          return false;
+          throw UnexpectedResponseException(
+              "unexpected HTTP status : ${res.statusCode} ${res.reasonPhrase}");
         default:
           throw UnexpectedResponseException(
               "unexpected HTTP status : ${res.statusCode} ${res.reasonPhrase}");

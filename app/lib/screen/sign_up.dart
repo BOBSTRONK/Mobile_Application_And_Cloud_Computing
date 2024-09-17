@@ -7,6 +7,7 @@ import 'package:app/service/Firebase_database.dart';
 import 'package:app/service/deep_face_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:m7_livelyness_detection/index.dart';
 import 'package:provider/provider.dart';
@@ -240,6 +241,14 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // validator for email
+  bool isEmailValid(String email) {
+    String emailPattern =
+        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+";
+    RegExp regExp = new RegExp(emailPattern);
+    return regExp.hasMatch(email);
+  }
+
   Widget SignUpForm() {
     return Form(
         key: _formkey,
@@ -253,6 +262,9 @@ class _SignUpPageState extends State<SignUpPage> {
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return "Please enter the Email";
+                }
+                if (!isEmailValid(value)) {
+                  return "Please enter a valid email address";
                 }
                 return null;
               },
@@ -277,6 +289,7 @@ class _SignUpPageState extends State<SignUpPage> {
               child: TextFormField(
                 textInputAction: TextInputAction.done,
                 cursorColor: Colors.black,
+                inputFormatters: [LengthLimitingTextInputFormatter(30)],
                 controller: nameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {

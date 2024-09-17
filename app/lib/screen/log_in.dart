@@ -1,4 +1,5 @@
 import 'package:app/model/user.dart';
+import 'package:app/screen/becomePublisher.dart';
 import 'package:app/screen/home.dart';
 import 'package:app/service/contract_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -272,49 +273,74 @@ class _VotingPageState extends State<VotingPage> {
       return Scaffold(
           drawer: Drawer(
             child: ListView(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.all(0),
               children: [
-                // DrawerHeader(
-                //   child: UserAccountsDrawerHeader(
-                //     decoration: BoxDecoration(
-                //       color: Colors.white,
-                //     ),
-                //     accountName: Text(
-                //       "Cai",
-                //       style: TextStyle(
-                //           fontSize: 18,
-                //           color: Colors.black,
-                //           fontWeight: FontWeight.bold),
-                //     ),
-                //     accountEmail: Text(
-                //       "caiweidong123@gmail.com",
-                //       style: TextStyle(
-                //           fontSize: 18,
-                //           color: Colors.black,
-                //           fontWeight: FontWeight.bold),
-                //     ),
-                //     currentAccountPictureSize: Size.square(35),
-                //     currentAccountPicture: CircleAvatar(
-                //       backgroundColor: Colors.white,
-                //       child: Text(
-                //         "C",
-                //         style: TextStyle(fontSize: 25, color: Colors.blue),
-                //       ),
-                //     ),
-                //   ),
-                //   decoration: BoxDecoration(
-                //     color: Colors.white,
-                //   ),
-                // ),
+                DrawerHeader(
+                  child: Container(
+                    alignment: Alignment.bottomLeft,
+                    child: Text(
+                      "B-Voting Application",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      image: DecorationImage(
+                          image: AssetImage(
+                              'assets/images/blockchainIllustration.png'),
+                          fit: BoxFit.cover)),
+                ),
                 ListTile(
                   leading: const Icon(Icons.person),
-                  title: const Text('Profile information'),
-                  onTap: () {},
+                  title: const Text('User Information'),
+                  onTap: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext _context) {
+                          return AlertDialog(
+                            title: Text("Info User"),
+                            content: Container(
+                              padding: EdgeInsets.all(5),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "User Name: ${widget.user.name}",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    "Email: ${widget.user.email}",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(_context).pop();
+                                  },
+                                  child: Text("Ok")),
+                            ],
+                          );
+                        });
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.supervisor_account),
                   title: const Text('Become Publisher'),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (BuildContext build) {
+                      return BecomePublisherPage();
+                    }));
+                  },
+                ),
+                Divider(
+                  height: 10,
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout),

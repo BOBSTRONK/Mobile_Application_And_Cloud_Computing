@@ -35,7 +35,7 @@ class HomePageProvider extends ChangeNotifier {
               context,
               MaterialPageRoute(
                   builder: ((context) => VotingPage(
-                        user: users![i],
+                        user: users[i],
                       ))));
           notifyListeners();
           break;
@@ -52,7 +52,7 @@ class HomePageProvider extends ChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           backgroundColor: Colors.black,
           content: Text(
-            "Server problem, please wait",
+            "Check your internet connectivity or maybe something went wrong with Server",
             style: TextStyle(fontSize: 20, color: Colors.white),
           )));
       loading = false;
