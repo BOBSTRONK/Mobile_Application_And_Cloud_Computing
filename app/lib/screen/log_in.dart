@@ -205,7 +205,7 @@ class _VotingPageState extends State<VotingPage> {
                   onTap: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (BuildContext build) {
-                      return BecomePublisherPage();
+                      return BecomePublisherPage(user: widget.user);
                     }));
                   },
                 ),

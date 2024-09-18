@@ -27,6 +27,16 @@ class ContractProvider extends ChangeNotifier {
   final String privateKey =
       "5ce525baae5e70f19e836d5e969edc94ffc39c8e977f245cc53a5ddbc31f651b";
 
+  void pageLoading() {
+    loading = true;
+    notifyListeners();
+  }
+
+  void pageUnloading() {
+    loading = false;
+    notifyListeners();
+  }
+
   // Method to get the deployed smart contract
   Future<DeployedContract> getContract(String contractAddress) async {
     // Load the ABI file from assets
@@ -37,6 +47,19 @@ class ContractProvider extends ChangeNotifier {
         EthereumAddress.fromHex(contractAddress));
 
     return contract;
+  }
+
+  // Verify if a given ID is a publisher or not
+  Future<bool> verifyPublisher(String publisherId) async {
+    // Get the contract
+    final contract = await getContract(contractAddress);
+    // user the function from the contract, this is a "GET" function
+    final function = contract.function("publishers");
+    // use BigInt in interaction with contract
+    final result = await ethClient
+        .call(contract: contract, function: function, params: [publisherId]);
+    print(result[0]);
+    return result[0];
   }
 
   // Method to fetch a specific Vote events
@@ -73,6 +96,7 @@ class ContractProvider extends ChangeNotifier {
 
   // register a voter
   Future<void> registerVoter(String voterId) async {
+    pageLoading();
     // get contract by Address
     final contract = await getContract(contractAddress);
     // get the specific function of contract
@@ -90,6 +114,41 @@ class ContractProvider extends ChangeNotifier {
     } on Exception catch (e) {
       print(e);
     }
+  }
+
+  Future<String> becomePublisher(String userId) async {
+    pageLoading();
+    // get contract by Address
+    final contract = await getContract(contractAddress);
+    // get the specific function of contract
+    final function = contract.function("becomePublisher");
+    // create credentials from private key
+    final credentials = EthPrivateKey.fromHex(privateKey);
+    print("Become Publisher is executing!");
+    try {
+      final publisherRegisteredEvent = contract.event("publisherRegistered");
+
+      // send the transaction to become a publisher
+      final answer = await ethClient.sendTransaction(
+          credentials,
+          chainId: 11155111,
+          Transaction.callContract(
+              contract: contract, function: function, parameters: [userId]));
+
+      final subscription = ethClient
+          .events(FilterOptions.events(
+              contract: contract, event: publisherRegisteredEvent))
+          .take(100)
+          .listen((event) {
+        print("The user become a publisher!");
+        pageUnloading();
+      });
+      return answer;
+    } on Exception catch (e) {
+      pageUnloading();
+      print(e);
+    }
+    return "null";
   }
 
   // cast a vote for a specific Voter Event
