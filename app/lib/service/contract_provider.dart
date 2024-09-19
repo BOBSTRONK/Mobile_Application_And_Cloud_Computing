@@ -22,7 +22,7 @@ class ContractProvider extends ChangeNotifier {
   bool loading = false;
   // smart contract address
   // String contractAddress = "0xf4F6b8B66045ee89Cfd56a8f45D1Cb44DC9d5AC8";
-  String contractAddress = "0xC622931AD86AFA12c0086aff8345A40F1f06E68e";
+  String contractAddress = "0x1aC9260303Ee1A2CF1022504801F0Bc03575677e";
   // Private Key for transaction
   final String privateKey =
       "5ce525baae5e70f19e836d5e969edc94ffc39c8e977f245cc53a5ddbc31f651b";
@@ -217,6 +217,76 @@ class ContractProvider extends ChangeNotifier {
                 ],
               );
             });
+      }
+      return "null";
+    }
+  }
+
+  Future<String> endVoting(int eventId, String publisher) async {
+    final contract = await getContract(contractAddress);
+    final function = contract.function("endVoting");
+    final eventBigInt = BigInt.from(eventId);
+    final credentials = EthPrivateKey.fromHex(privateKey);
+    try {
+      // Get the "VoteCasted" event from the smart contract.
+      // This event will be triggered after a successful vote and can be captured in the front-end.
+      final voteCastedEvent = contract.event("VotingEventEnded");
+
+      // Send a transaction to the Ethereum network to cast a vote.
+      // The transaction will invoke the 'castVote' function on the smart contract.
+      final answer = await ethClient.sendTransaction(
+          credentials, // Use credentials (private key) for signing the transaction
+          chainId:
+              11155111, // Chain ID of the Ethereum network， Sepolia TestNetwork
+
+          // / Creates a transaction to call a smart contract method
+          Transaction.callContract(
+              contract: contract,
+              function: function,
+              parameters: [eventBigInt, publisher]));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.black,
+          content: Text(
+            "Endding the Vote Event, it may take some time!",
+            style: TextStyle(fontSize: 20, color: Colors.white),
+          )));
+      // subscribe to events emmitted by the contract, specifically the "VoteCasted" event.
+      // This listens for up to 100 VoteCasted Events and performs an action each time the event is triggered
+      final subscription = ethClient
+          .events(FilterOptions.events(
+              contract: contract,
+              event: voteCastedEvent)) // listen to voteCastedEvent
+          .take(100)
+          .listen((event) {
+        // when a cote casted event occurs, update the UI by calling voteEvents function
+        // voteEvents will fetch the newiest event, in this way it will update the Events List
+        voteEvents(contractAddress);
+        pageUnloading();
+      });
+
+      return answer;
+    } on Exception catch (e) {
+      print(e.toString());
+      print(e);
+      // if the error indicates that the voter has already voted, show the Dialog to inform user the already voted
+      if (e.toString() ==
+          'RPCError: got code 3 with msg "execution reverted: Voting is already closed".') {
+        showDialog(
+            context: context,
+            builder: (BuildContext _context) {
+              return AlertDialog(
+                title: Text("Warning"),
+                content: Text("You have already closed voting!"),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(_context).pop();
+                      },
+                      child: Text("OK"))
+                ],
+              );
+            });
+        notifyListeners();
       }
       return "null";
     }

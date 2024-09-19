@@ -1,6 +1,7 @@
 import 'package:app/model/user.dart';
 import 'package:app/screen/becomePublisher.dart';
 import 'package:app/screen/home.dart';
+import 'package:app/screen/my_vote_events.dart';
 import 'package:app/service/contract_provider.dart';
 import 'package:app/service/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -27,7 +28,6 @@ class _VotingPageState extends State<VotingPage> {
   ContractProvider? contractProvider;
   late Client httpclient;
   late Web3Client ethClient;
-  FirebaseMethods? firebaseInstance;
 
   String? firstTopic, secondTopic;
   TextEditingController firstTopicController = new TextEditingController();
@@ -47,7 +47,6 @@ class _VotingPageState extends State<VotingPage> {
   void initState() {
     // TODO: implement initState
     httpclient = Client();
-    firebaseInstance = FirebaseMethods();
     ethClient = Web3Client(rpcUrl, httpclient);
   }
 
@@ -181,21 +180,24 @@ class _VotingPageState extends State<VotingPage> {
                     BigInt eventId_bigInt =
                         contractProvider!.Events[0][index][2];
                     int eventId = eventId_bigInt.toInt();
+                    bool eventStatus = contractProvider!.Events[0][index][3];
                     String publisherId = contractProvider!.Events[0][index][4];
                     String publisherName =
                         contractProvider!.Events[0][index][5];
                     print("eventID: ${eventId}");
                     print("the first topic here: ${firstTopic}");
-                    return VoteEventTile(
-                        firstTopicCountInteger,
-                        firstTopic,
-                        firstTopicCount,
-                        secondTopicCountInteger,
-                        secondTopic,
-                        secondTopicCount,
-                        eventId,
-                        publisherId,
-                        publisherName);
+                    if (eventStatus == true) {
+                      return VoteEventTile(
+                          firstTopicCountInteger,
+                          firstTopic,
+                          firstTopicCount,
+                          secondTopicCountInteger,
+                          secondTopic,
+                          secondTopicCount,
+                          eventId,
+                          publisherId,
+                          publisherName);
+                    }
                   }),
             )
           ],
@@ -300,6 +302,16 @@ class _VotingPageState extends State<VotingPage> {
                     Navigator.pushReplacement(context,
                         MaterialPageRoute(builder: (BuildContext build) {
                       return BecomePublisherPage(user: widget.user);
+                    }));
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.supervisor_account),
+                  title: const Text('My Vote Event'),
+                  onTap: () {
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (BuildContext build) {
+                      return MyVoteEvents(user: widget.user);
                     }));
                   },
                 ),
@@ -583,7 +595,29 @@ class _VotingPageState extends State<VotingPage> {
             children: [
               InkWell(
                 onTap: () {
-                  contractProvider!.castVote(eventID, 0, widget.user.id);
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext _context) {
+                        return AlertDialog(
+                          title: Text("Info"),
+                          content: Text(
+                              'You are voting "${firstTopic}", Are you sure?'),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(_context).pop();
+                                },
+                                child: Text("No")),
+                            TextButton(
+                                onPressed: () {
+                                  contractProvider!
+                                      .castVote(eventID, 0, widget.user.id);
+                                  Navigator.of(_context).pop();
+                                },
+                                child: Text("Yes, I am sure")),
+                          ],
+                        );
+                      });
                 },
                 child: Container(
                   width: 180,
@@ -621,7 +655,29 @@ class _VotingPageState extends State<VotingPage> {
               ),
               InkWell(
                 onTap: () {
-                  contractProvider!.castVote(eventID, 1, widget.user.id);
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext _context) {
+                        return AlertDialog(
+                          title: Text("Info"),
+                          content: Text(
+                              'You are voting "${secondTopic}", Are you sure?'),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(_context).pop();
+                                },
+                                child: Text("No")),
+                            TextButton(
+                                onPressed: () {
+                                  contractProvider!
+                                      .castVote(eventID, 1, widget.user.id);
+                                  Navigator.of(_context).pop();
+                                },
+                                child: Text("Yes, I am sure")),
+                          ],
+                        );
+                      });
                 },
                 child: Container(
                   width: 180,
