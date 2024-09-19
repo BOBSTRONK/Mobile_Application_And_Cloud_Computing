@@ -10,7 +10,7 @@ class ContractProvider extends ChangeNotifier {
       {required this.httpclient,
       required this.ethClient,
       required this.context}) {
-    voteEvents(0, contractAddress);
+    voteEvents(contractAddress);
   }
   BuildContext context;
   // http client for sending request
@@ -22,7 +22,7 @@ class ContractProvider extends ChangeNotifier {
   bool loading = false;
   // smart contract address
   // String contractAddress = "0xf4F6b8B66045ee89Cfd56a8f45D1Cb44DC9d5AC8";
-  String contractAddress = "0xD60f384eb5F9056530639d1f0832d1E89491adAE";
+  String contractAddress = "0xb5cc77189c4f4dcc5Bf704123AE4Bf90FDD471a5";
   // Private Key for transaction
   final String privateKey =
       "5ce525baae5e70f19e836d5e969edc94ffc39c8e977f245cc53a5ddbc31f651b";
@@ -63,14 +63,13 @@ class ContractProvider extends ChangeNotifier {
   }
 
   // Method to fetch a specific Vote events
-  Future<List<dynamic>> voteEvents(int eventId, String contractAddress) async {
+  Future<List<dynamic>> voteEvents(String contractAddress) async {
     loading = true;
     // Get the contract
     final contract = await getContract(contractAddress);
     // user the function from the contract, this is a "GET" function
     final function = contract.function("getVoteEvents");
     // use BigInt in interaction with contract
-    final eventBigInt = BigInt.from(eventId);
 
     // call the contract function and store the result
     final result = await ethClient
@@ -151,6 +150,73 @@ class ContractProvider extends ChangeNotifier {
     return "null";
   }
 
+  Future<String> createAVoteEvent(String firstDescription,
+      String secondDescription, String publisherId) async {
+    // get contract by Address
+    final contract = await getContract(contractAddress);
+    // get the specific function of Contract
+    final function = contract.function("createVoteEvent");
+    // create credentials from private key
+    final credentials = EthPrivateKey.fromHex(privateKey);
+    try {
+      print("create A vote Event!");
+      final voteCreatedEvent = contract.event("voteEventCreated");
+      final answer = await ethClient.sendTransaction(
+          credentials, // Use credentials (private key) for signing the transaction
+          chainId:
+              11155111, // Chain ID of the Ethereum network， Sepolia TestNetwork
+
+          // / Creates a transaction to call a smart contract method
+          Transaction.callContract(
+              contract: contract,
+              function: function,
+              parameters: [firstDescription, secondDescription, publisherId]));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          backgroundColor: Colors.black,
+          content: Text(
+            "Creating a VoteEvent, it may take some time!",
+            style: TextStyle(fontSize: 20, color: Colors.white),
+          )));
+      // subscribe to events emmitted by the contract, specifically the "VoteCasted" event.
+      // This listens for up to 100 VoteCasted Events and performs an action each time the event is triggered
+      final subscription = ethClient
+          .events(FilterOptions.events(
+              contract: contract,
+              event: voteCreatedEvent)) // listen to voteCastedEvent
+          .take(100)
+          .listen((event) {
+        // when a cote casted event occurs, update the UI by calling voteEvents function
+        // voteEvents will fetch the newiest event, in this way it will update the Events List
+        voteEvents(contractAddress);
+      });
+
+      return answer;
+    } on Exception catch (e) {
+      print(e.toString());
+      print(e);
+      if (e.toString() ==
+          'RPCError: got code 3 with msg "execution reverted: Only Publisher can call this function".') {
+        showDialog(
+            context: context,
+            builder: (BuildContext _context) {
+              return AlertDialog(
+                title: Text("Warning"),
+                content: Text(
+                    "You are not a Publisher! Become a Publisher then you care create Vote Event"),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(_context).pop();
+                      },
+                      child: Text("OK"))
+                ],
+              );
+            });
+      }
+      return "null";
+    }
+  }
+
   // cast a vote for a specific Voter Event
   // voterID: the ID of user that's going to vote
   Future<String> castVote(int eventId, int topic, String voterId) async {
@@ -205,7 +271,7 @@ class ContractProvider extends ChangeNotifier {
           .listen((event) {
         // when a cote casted event occurs, update the UI by calling voteEvents function
         // voteEvents will fetch the newiest event, in this way it will update the Events List
-        voteEvents(eventId, contractAddress);
+        voteEvents(contractAddress);
         notifyListeners();
       });
 

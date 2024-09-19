@@ -1,5 +1,6 @@
 import 'package:app/components/components.dart';
 import 'package:app/model/user.dart';
+import 'package:app/screen/log_in.dart';
 import 'package:app/service/contract_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -43,7 +44,7 @@ class _BecomePublisherPageState extends State<BecomePublisherPage> {
     if (_formkey.currentState!.validate()) {
       cdKey = cdKeyController.text;
       if (cdKey == "1111") {
-        await contractProvider!.becomePublisher("9876");
+        await contractProvider!.becomePublisher(widget.user.id);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           backgroundColor: Colors.black,
           content: Text(
@@ -85,11 +86,22 @@ class _BecomePublisherPageState extends State<BecomePublisherPage> {
   Widget _build(BuildContext context) {
     return Builder(builder: (BuildContext context) {
       contractProvider = context.watch<ContractProvider>();
+      print(widget.user.id);
       return Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(),
+        appBar: AppBar(
+          leading: GestureDetector(
+            child: Icon(Icons.arrow_back),
+            onTap: () {
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (BuildContext build) {
+                return VotingPage(user: widget.user);
+              }));
+            },
+          ),
+        ),
         body: FutureBuilder(
-            future: contractProvider!.verifyPublisher("9876"),
+            future: contractProvider!.verifyPublisher(widget.user.id),
             builder: (context, AsyncSnapshot _snapshot) {
               if (_snapshot.connectionState == ConnectionState.waiting) {
                 return Center(

@@ -24,6 +24,11 @@ class _VotingPageState extends State<VotingPage> {
   ContractProvider? contractProvider;
   late Client httpclient;
   late Web3Client ethClient;
+  String? firstTopic, secondTopic;
+  TextEditingController firstTopicController = new TextEditingController();
+  TextEditingController secondTopicController = new TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool? itsPublisherOrNot;
   final String myAddress = "0xBB0b117ed33C4e059e15C277E8FDCA8A9ac57380";
   // 0x20ffb7d5d7fcf402203e538f04fec7d71fa703ec
   // 85d2242ae1b7759934d4b0d4f0d62d666cf7d73e21dbd09d73c7de266b72a25a
@@ -38,6 +43,15 @@ class _VotingPageState extends State<VotingPage> {
     // TODO: implement initState
     httpclient = Client();
     ethClient = Web3Client(rpcUrl, httpclient);
+  }
+
+  void createAVoteEvent() {
+    if (_formKey.currentState!.validate()) {
+      firstTopic = firstTopicController.text;
+      secondTopic = secondTopicController.text;
+      contractProvider!
+          .createAVoteEvent(firstTopic!, secondTopic!, widget.user.id);
+    }
   }
 
   @override
@@ -127,6 +141,10 @@ class _VotingPageState extends State<VotingPage> {
                     int secondTopicCountInteger = secondCount.toInt();
                     String secondTopicCount =
                         contractProvider!.Events[0][index][1][1].toString();
+                    BigInt eventId_bigInt =
+                        contractProvider!.Events[0][index][2];
+                    int eventId = eventId_bigInt.toInt();
+                    print("eventID: ${eventId}");
                     print("the first topic here: ${firstTopic}");
                     return VoteEventTile(
                         firstTopicCountInteger,
@@ -134,7 +152,8 @@ class _VotingPageState extends State<VotingPage> {
                         firstTopicCount,
                         secondTopicCountInteger,
                         secondTopic,
-                        secondTopicCount);
+                        secondTopicCount,
+                        eventId);
                   }),
             )
           ],
@@ -163,47 +182,80 @@ class _VotingPageState extends State<VotingPage> {
                 ListTile(
                   leading: const Icon(Icons.person),
                   title: const Text('User Information'),
-                  onTap: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext _context) {
-                          return AlertDialog(
-                            title: Text("Info User"),
-                            content: Container(
-                              padding: EdgeInsets.all(5),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "User Name: ${widget.user.name}",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    "Email: ${widget.user.email}",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
+                  onTap: () async {
+                    itsPublisherOrNot =
+                        await contractProvider!.verifyPublisher(widget.user.id);
+                    if (itsPublisherOrNot == true) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext _context) {
+                            return AlertDialog(
+                              title: Text("Create a Vote Event"),
+                              content: Container(
+                                padding: EdgeInsets.all(5),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "User Name: ${widget.user.name}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      "Email: ${widget.user.email}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(_context).pop();
-                                  },
-                                  child: Text("Ok")),
-                            ],
-                          );
-                        });
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(_context).pop();
+                                    },
+                                    child: Text("Ok")),
+                              ],
+                            );
+                          });
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext _context) {
+                            return AlertDialog(
+                              title: Text("Warning"),
+                              content: Container(
+                                padding: EdgeInsets.all(5),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "You are not a Publisher, become publisher first, Then you can publish the vote Event",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(_context).pop();
+                                    },
+                                    child: Text("Understood")),
+                              ],
+                            );
+                          });
+                    }
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.supervisor_account),
                   title: const Text('Become Publisher'),
                   onTap: () {
-                    Navigator.push(context,
+                    Navigator.pushReplacement(context,
                         MaterialPageRoute(builder: (BuildContext build) {
                       return BecomePublisherPage(user: widget.user);
                     }));
@@ -258,6 +310,18 @@ class _VotingPageState extends State<VotingPage> {
             iconTheme: IconThemeData(color: Colors.white),
             backgroundColor: Colors.black,
             elevation: 0,
+            actions: [
+              GestureDetector(
+                child: Icon(Icons.add),
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext _context) {
+                        return createVoteEventDialog(_context);
+                      });
+                },
+              )
+            ],
             title: const Text(
               "Voting",
               style: TextStyle(
@@ -270,14 +334,114 @@ class _VotingPageState extends State<VotingPage> {
     });
   }
 
+  Widget createVoteEventDialog(BuildContext _context) {
+    return AlertDialog(
+      title: Text("Create a vote event"),
+      content: Container(
+        padding: EdgeInsets.all(5),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Description for First Event",
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500),
+              ),
+              TextFormField(
+                textInputAction: TextInputAction.next,
+                cursorColor: Colors.black,
+                controller: firstTopicController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please A valid description";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  hintText: "First event",
+                  hintStyle: TextStyle(fontSize: 15),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                  ),
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Icon(Icons.description),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Text(
+                "Description for Second Event",
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500),
+              ),
+              TextFormField(
+                textInputAction: TextInputAction.next,
+                cursorColor: Colors.black,
+                controller: secondTopicController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please A valid description";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  hintText: "Second event",
+                  hintStyle: TextStyle(fontSize: 15),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(30)),
+                  ),
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Icon(Icons.description),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () {
+              firstTopicController.clear();
+              secondTopicController.clear();
+              Navigator.of(_context).pop();
+            },
+            child: Text("Cancel")),
+        TextButton(
+            onPressed: () {
+              createAVoteEvent();
+              firstTopicController.clear();
+              secondTopicController.clear();
+              Navigator.of(_context).pop();
+            },
+            child: Text("Create")),
+      ],
+    );
+  }
+
   Widget VoteEventTile(
-    int firstTopicCountInteger,
-    String firstTopic,
-    String firstTopicCount,
-    int secondTopicCountInteger,
-    String secondTopic,
-    String secondTopicCount,
-  ) {
+      int firstTopicCountInteger,
+      String firstTopic,
+      String firstTopicCount,
+      int secondTopicCountInteger,
+      String secondTopic,
+      String secondTopicCount,
+      int eventID) {
     return Column(
       children: [
         const SizedBox(
@@ -349,7 +513,7 @@ class _VotingPageState extends State<VotingPage> {
             children: [
               InkWell(
                 onTap: () {
-                  contractProvider!.castVote(0, 0, widget.user.id);
+                  contractProvider!.castVote(eventID, 0, widget.user.id);
                 },
                 child: Container(
                   width: 180,
@@ -387,7 +551,7 @@ class _VotingPageState extends State<VotingPage> {
               ),
               InkWell(
                 onTap: () {
-                  contractProvider!.castVote(0, 1, widget.user.id);
+                  contractProvider!.castVote(eventID, 1, widget.user.id);
                 },
                 child: Container(
                   width: 180,
