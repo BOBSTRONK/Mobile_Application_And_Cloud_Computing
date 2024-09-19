@@ -5,7 +5,8 @@ import "package:m7_livelyness_detection/index.dart";
 
 class DeepFaceApi {
   // should be the IP address of the machine if we are using localhost
-  final String _basePath = "http://192.168.1.120:8080";
+  final String _basePath =
+      "http://rnrux-2001-b07-644a-a890-4d4e-3488-c405-9892.a.free.pinggy.link";
 
   // convert image from path into abase64, then it can be feeded to the API
   Future<String> convertImageFromPath(String base64Image) async {
