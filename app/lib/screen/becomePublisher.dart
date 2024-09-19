@@ -127,6 +127,8 @@ class _BecomePublisherPageState extends State<BecomePublisherPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          Text(
+                              "Processing the data to become a Publisher, please Wait and do not leave this page!"),
                           CircularProgressIndicator(
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(Colors.blue),

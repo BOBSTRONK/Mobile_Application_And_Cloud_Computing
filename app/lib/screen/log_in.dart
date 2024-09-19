@@ -2,8 +2,11 @@ import 'package:app/model/user.dart';
 import 'package:app/screen/becomePublisher.dart';
 import 'package:app/screen/home.dart';
 import 'package:app/service/contract_provider.dart';
+import 'package:app/service/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
@@ -24,6 +27,8 @@ class _VotingPageState extends State<VotingPage> {
   ContractProvider? contractProvider;
   late Client httpclient;
   late Web3Client ethClient;
+  FirebaseMethods? firebaseInstance;
+
   String? firstTopic, secondTopic;
   TextEditingController firstTopicController = new TextEditingController();
   TextEditingController secondTopicController = new TextEditingController();
@@ -42,6 +47,7 @@ class _VotingPageState extends State<VotingPage> {
   void initState() {
     // TODO: implement initState
     httpclient = Client();
+    firebaseInstance = FirebaseMethods();
     ethClient = Web3Client(rpcUrl, httpclient);
   }
 
@@ -49,8 +55,8 @@ class _VotingPageState extends State<VotingPage> {
     if (_formKey.currentState!.validate()) {
       firstTopic = firstTopicController.text;
       secondTopic = secondTopicController.text;
-      contractProvider!
-          .createAVoteEvent(firstTopic!, secondTopic!, widget.user.id);
+      contractProvider!.createAVoteEvent(
+          firstTopic!, secondTopic!, widget.user.id, widget.user.name);
     }
   }
 
@@ -72,9 +78,40 @@ class _VotingPageState extends State<VotingPage> {
       if (contractProvider!.loading == true) {
         _body = Container(
           alignment: Alignment.center,
-          child: CircularProgressIndicator.adaptive(
-            valueColor: AlwaysStoppedAnimation<Color?>(Colors.black),
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Text(
+                  "Casting the vote!",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Text(
+                  "It may take some time!",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Text(
+                  "DO NOT leave the page!",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              ),
+            ],
           ),
         );
       } else {
@@ -144,6 +181,9 @@ class _VotingPageState extends State<VotingPage> {
                     BigInt eventId_bigInt =
                         contractProvider!.Events[0][index][2];
                     int eventId = eventId_bigInt.toInt();
+                    String publisherId = contractProvider!.Events[0][index][4];
+                    String publisherName =
+                        contractProvider!.Events[0][index][5];
                     print("eventID: ${eventId}");
                     print("the first topic here: ${firstTopic}");
                     return VoteEventTile(
@@ -153,7 +193,9 @@ class _VotingPageState extends State<VotingPage> {
                         secondTopicCountInteger,
                         secondTopic,
                         secondTopicCount,
-                        eventId);
+                        eventId,
+                        publisherId,
+                        publisherName);
                   }),
             )
           ],
@@ -441,7 +483,9 @@ class _VotingPageState extends State<VotingPage> {
       int secondTopicCountInteger,
       String secondTopic,
       String secondTopicCount,
-      int eventID) {
+      int eventID,
+      String publisherID,
+      String publisherName) {
     return Column(
       children: [
         const SizedBox(
@@ -451,7 +495,7 @@ class _VotingPageState extends State<VotingPage> {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Container(
             width: 400,
-            height: 200,
+            height: 260,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(40), color: Colors.white30),
             child: Padding(
@@ -499,8 +543,34 @@ class _VotingPageState extends State<VotingPage> {
                     backgroundColor: Colors.white30,
                   ),
                   const SizedBox(
-                    height: 5,
+                    height: 10,
                   ),
+                  Container(
+                      alignment: Alignment.bottomLeft,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Align(
+                              alignment: Alignment.bottomLeft,
+                              child: Text(
+                                "Publisher: ${publisherName}",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              )),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Align(
+                              alignment: Alignment.bottomLeft,
+                              child: Text(
+                                "Publisher's ID: ${publisherID}",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              )),
+                        ],
+                      ))
                 ],
               ),
             ),

@@ -19,4 +19,15 @@ class FirebaseMethods {
         .toList();
     return userList;
   }
+
+  Future<User> getSpecificUserById(String userId) async {
+    final snapshot = await users.where("Id", isEqualTo: userId).get();
+    final userData = snapshot.docs
+        .map((e) =>
+            User.fromSnapShot(e as DocumentSnapshot<Map<String, dynamic>>))
+        .toList();
+
+    print(userData);
+    return userData[0];
+  }
 }

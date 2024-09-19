@@ -51,6 +51,11 @@
         "internalType": "string",
         "name": "publisher",
         "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "publisherName",
+        "type": "string"
       }
     ],
     "name": "createVoteEvent",
@@ -77,6 +82,32 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "voter",
+        "type": "string"
+      }
+    ],
+    "name": "registerUser",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "startVoting",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -98,6 +129,12 @@
       }
     ],
     "name": "VoteCasted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "VoteEventStart",
     "type": "event"
   },
   {
@@ -172,6 +209,11 @@
             "internalType": "string",
             "name": "publisherId",
             "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "publisherName",
+            "type": "string"
           }
         ],
         "indexed": true,
@@ -195,32 +237,6 @@
     ],
     "name": "publisherRegistered",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "voter",
-        "type": "string"
-      }
-    ],
-    "name": "registerUser",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "eventId",
-        "type": "uint256"
-      }
-    ],
-    "name": "startVoting",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "anonymous": false,
@@ -377,6 +393,11 @@
             "internalType": "string",
             "name": "publisherId",
             "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "publisherName",
+            "type": "string"
           }
         ],
         "internalType": "struct DecentralizedVoting.voteEvent[]",
@@ -463,6 +484,11 @@
       {
         "internalType": "string",
         "name": "publisherId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "publisherName",
         "type": "string"
       }
     ],

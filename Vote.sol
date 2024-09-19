@@ -15,6 +15,7 @@ contract DecentralizedVoting {
         uint256 id;
         bool status;
         string publisherId;
+        string publisherName;
     }
 
     struct Topic {
@@ -64,8 +65,12 @@ contract DecentralizedVoting {
     );
     // Emit when Vote is ended
     event VotingEventEnded();
+    // Emit when Vote is started
+    event VoteEventStart();
     // Emit when Vote is ended
     event VotingEventStart(voteEvent indexed startedEvent);
+    // Emit a Vote Event is created
+    event voteEventCreated(uint256 indexed idVoteEventCreated);
 
     // Modifier for the function that
     // can be casted only by Owner of Contract
@@ -76,7 +81,7 @@ contract DecentralizedVoting {
 
     // only publisher can cast the function
     modifier onlyPublisher(string memory publisher) {
-        require(publishers[publisher], "Only admin can call this function");
+        require(publishers[publisher], "Only Publisher can call this function");
         _;
     }
 
@@ -126,16 +131,21 @@ contract DecentralizedVoting {
     }
 
     function startVoting(uint256 eventId) external onlyAdmin {
-        require(voteEventStatus[eventId] != true, "Voting is already active");
-        voteEventStatus[eventId] = true;
+        require(voteEvents[eventId].status == true, "Voting is already active");
+        voteEvents[eventId].status = true;
+        emit VoteEventStart();
     }
 
     function endVoting(
         uint256 eventId,
         string memory publisher
     ) external onlyEventCreator(publisher, eventId) {
-        require(voteEventStatus[eventId] == false, "Voting is already closed");
-        voteEventStatus[eventId] = false;
+        // voteEvents[eventId].Topic1.voteCount
+        require(
+            voteEvents[eventId].status == false,
+            "Voting is already closed"
+        );
+        voteEvents[eventId].status = false;
         emit VotingEventEnded();
     }
 
@@ -182,17 +192,21 @@ contract DecentralizedVoting {
     function createVoteEvent(
         string memory description1,
         string memory description2,
-        string memory publisher
+        string memory publisher,
+        string memory publisherName
     ) external onlyPublisher(publisher) {
         voteEvents[totalVoteEvent] = voteEvent({
             Topic1: Topic(description1, 0),
             Topic2: Topic(description2, 0),
             id: totalVoteEvent,
             status: true,
-            publisherId: publisher
+            publisherId: publisher,
+            publisherName: publisherName
         });
         voteEventStatus[totalVoteEvent] = true;
         voteEventsCreators[totalVoteEvent][publisher] = true;
+        emit voteEventCreated(totalVoteEvent);
+
         totalVoteEvent++;
     }
 }

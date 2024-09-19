@@ -22,7 +22,7 @@ class ContractProvider extends ChangeNotifier {
   bool loading = false;
   // smart contract address
   // String contractAddress = "0xf4F6b8B66045ee89Cfd56a8f45D1Cb44DC9d5AC8";
-  String contractAddress = "0xb5cc77189c4f4dcc5Bf704123AE4Bf90FDD471a5";
+  String contractAddress = "0xC622931AD86AFA12c0086aff8345A40F1f06E68e";
   // Private Key for transaction
   final String privateKey =
       "5ce525baae5e70f19e836d5e969edc94ffc39c8e977f245cc53a5ddbc31f651b";
@@ -151,7 +151,7 @@ class ContractProvider extends ChangeNotifier {
   }
 
   Future<String> createAVoteEvent(String firstDescription,
-      String secondDescription, String publisherId) async {
+      String secondDescription, String publisherId, String userName) async {
     // get contract by Address
     final contract = await getContract(contractAddress);
     // get the specific function of Contract
@@ -170,7 +170,12 @@ class ContractProvider extends ChangeNotifier {
           Transaction.callContract(
               contract: contract,
               function: function,
-              parameters: [firstDescription, secondDescription, publisherId]));
+              parameters: [
+                firstDescription,
+                secondDescription,
+                publisherId,
+                userName
+              ]));
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           backgroundColor: Colors.black,
           content: Text(
@@ -220,6 +225,7 @@ class ContractProvider extends ChangeNotifier {
   // cast a vote for a specific Voter Event
   // voterID: the ID of user that's going to vote
   Future<String> castVote(int eventId, int topic, String voterId) async {
+    pageLoading();
     // get contract by Address
     final contract = await getContract(contractAddress);
     // get the specific function of Contract
@@ -272,7 +278,7 @@ class ContractProvider extends ChangeNotifier {
         // when a cote casted event occurs, update the UI by calling voteEvents function
         // voteEvents will fetch the newiest event, in this way it will update the Events List
         voteEvents(contractAddress);
-        notifyListeners();
+        pageUnloading();
       });
 
       return answer;
@@ -297,6 +303,7 @@ class ContractProvider extends ChangeNotifier {
                 ],
               );
             });
+        pageUnloading();
       }
       return "null";
     }

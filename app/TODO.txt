@@ -1,13 +1,13 @@
-1. Adding publisher in voteEvents
+1. Adding publisher in voteEvents --> Done
     1.1. Adding it using iD, then check control ID via Firebase database to extract the userName
     1.2. Consider to change the structer of Blockchain
 
 2. CD key verification step --> Done
     2.1 verify the CD key and Insert it as Publisher
 
-3. Create a voteEvents 
+3. Create a voteEvents  --> Done
     3.1. verify the creator is a publisher (already done using modifer in smart contract)
 
-4. Check the voteEvent that has published by a user himself
+4. Check the voteEvent that has published by a user himself 
 
 5. Filter the voteEvent by publisher
